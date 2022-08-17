@@ -177,7 +177,7 @@
 	
 	<!-- 전체 게시글 리스트 -->
 	<select id="selectBoardList" resultType="hashmap">
-			SELECT	BOARD_NO,
+			SELECT	BOARD.BOARD_NO,
 					BOARD_HOST_ID,
 					BOARD_HOST_IDX,
 					BOARD_TITLE,
@@ -190,12 +190,20 @@
 					BOARD_MODIFY_NO,
 					BOARD_DATE_START,
 					BOARD_DATE_END,
-					BOARD_CONFIRM
-			FROM	BOARD
+					BOARD_CONFIRM,
+                    NVL(AVG_SCORE,0) as AVG_SCORE,
+                    NVL(RES_COUNT,0) as RES_COUNT
+			FROM	BOARD 
+            LEFT JOIN (SELECT AVG(NVL(SCORE, 0))AS AVG_SCORE, BOARD_NO FROM REVIEW GROUP BY BOARD_NO) REVIEW
+            ON      BOARD.BOARD_NO = REVIEW.BOARD_NO
+            LEFT JOIN (SELECT COUNT(*) RES_COUNT, RES_BOARD_NO 
+                        FROM RESERVATION 
+                        WHERE RES_LEVEL=5
+                        GROUP BY RES_BOARD_NO) RES
+            ON      BOARD.BOARD_NO = RES.RES_BOARD_NO
 			WHERE	BOARD_CONFIRM =1
 			AND		BOARD_CARE_NO >= #{BOARD_CARE_NO}
 			AND		BOARD_ADDR1 LIKE '%' || #{BOARD_ADDR1} || '%'
-
 	</select>
 	
 	
